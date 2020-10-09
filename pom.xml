@@ -6,16 +6,16 @@
 	<parent>
     <artifactId>storm-crawler</artifactId>
     <groupId>com.digitalpebble.stormcrawler</groupId>
-    <version>1.17-SNAPSHOT</version>
+    <version>1.18-SNAPSHOT</version>
   </parent>
 	<groupId>org.commoncrawl.stormcrawler</groupId>
 	<artifactId>warc-crawler</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.18-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<storm-crawler.version>1.17-SNAPSHOT</storm-crawler.version>
+		<storm-crawler.version>1.18-SNAPSHOT</storm-crawler.version>
 	</properties>
 
 	<build>
@@ -106,6 +106,11 @@
 		<dependency>
 			<groupId>com.digitalpebble.stormcrawler</groupId>
 			<artifactId>storm-crawler-warc</artifactId>
+			<version>${storm-crawler.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.digitalpebble.stormcrawler</groupId>
+			<artifactId>storm-crawler-elasticsearch</artifactId>
 			<version>${storm-crawler.version}</version>
 		</dependency>
 		<dependency>

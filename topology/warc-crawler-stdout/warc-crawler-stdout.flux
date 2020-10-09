@@ -1,12 +1,15 @@
 name: "warc-crawler-stdout"
 
+# read WARC files and write status and indexed fields to stdout
+# using WARCSpout, StdOutStatusUpdater and StdOutIndexer
+
 includes:
   - resource: true
     file: "/crawler-default.yaml"
     override: false
 
   - resource: false
-    file: "/data/install/crawler-conf.yaml"
+    file: "topology/warc-crawler-stdout/warc-crawler-stdout-conf.yaml"
     override: true
 
 spouts:
@@ -14,20 +17,23 @@ spouts:
     className: "com.digitalpebble.stormcrawler.warc.WARCSpout"
     parallelism: 1
     constructorArgs:
-      - "/data/install/input/"
+      - "/data/input/"
       - "*.{paths,txt}"
 
 bolts:
   - id: "status"
     className: "com.digitalpebble.stormcrawler.persistence.StdOutStatusUpdater"
     parallelism: 1
-  - id: "ssbolt"
-    className: "com.digitalpebble.stormcrawler.indexing.DummyIndexer"
+  - id: "parse"
+    className: "com.digitalpebble.stormcrawler.bolt.JSoupParserBolt"
+    parallelism: 2
+  - id: "index"
+    className: "com.digitalpebble.stormcrawler.indexing.StdOutIndexer"
     parallelism: 1
 
 streams:
   - from: "spout"
-    to: "ssbolt"
+    to: "parse"
     grouping:
       type: LOCAL_OR_SHUFFLE
 
@@ -37,7 +43,18 @@ streams:
       type: LOCAL_OR_SHUFFLE
       streamId: "status"
 
-  - from: "ssbolt"
+  - from: "parse"
+    to: "index"
+    grouping:
+      type: LOCAL_OR_SHUFFLE
+
+  - from: "parse"
+    to: "status"
+    grouping:
+      type: LOCAL_OR_SHUFFLE
+      streamId: "status"
+
+  - from: "index"
     to: "status"
     grouping:
       type: LOCAL_OR_SHUFFLE

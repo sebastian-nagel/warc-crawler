@@ -1,4 +1,7 @@
-name: "warc-crawler-rewrite-warc"
+name: "warc-crawler-warc-rewrite"
+
+# read WARC files and write page captures into new WARC files
+# using WARCSpout and WARCHdfsBolt
 
 includes:
   - resource: true
@@ -6,7 +9,7 @@ includes:
     override: false
 
   - resource: false
-    file: "/data/install/crawler-conf.yaml"
+    file: "topology/warc-crawler-warc-rewrite/warc-crawler-warc-rewrite-conf.yaml"
     override: true
 
 config:
@@ -24,7 +27,7 @@ components:
           - "/data/warc"
       - name: "withPrefix"
         args:
-          - "CC-NEWS"
+          - "SC-WARC-REWRITE"
   - id: "WARCFileRotationPolicy"
     className: "com.digitalpebble.stormcrawler.warc.FileTimeSizeRotationPolicy"
     constructorArgs:
@@ -33,7 +36,7 @@ components:
     configMethods:
       - name: "setTimeRotationInterval"
         args:
-          - 1440
+          - 10
           - MINUTES
   - id: "WARCInfo"
     className: "java.util.LinkedHashMap"
@@ -41,11 +44,11 @@ components:
       - name: "put"
         args:
          - "software"
-         - "StormCrawler 1.16 http://stormcrawler.net/"
+         - "StormCrawler 1.18 https://stormcrawler.net/"
       - name: "put"
         args:
          - "description"
-         - "News crawl for Common Crawl"
+         - "WARC rewriting topology"
       - name: "put"
         args:
          - "http-header-user-agent"
@@ -76,7 +79,7 @@ spouts:
     className: "com.digitalpebble.stormcrawler.warc.WARCSpout"
     parallelism: 1
     constructorArgs:
-      - "/data/install/input/"
+      - "/data/input/"
       - "*.{paths,txt}"
 
 bolts:
@@ -100,12 +103,6 @@ bolts:
   - id: "devnull"
     className: "org.apache.storm.perf.bolt.DevNullBolt"
     parallelism: 1
-  # - id: "status"
-  #   className: "com.digitalpebble.stormcrawler.persistence.StdOutStatusUpdater"
-  #   parallelism: 1
-  # - id: "ssbolt"
-  #   className: "com.digitalpebble.stormcrawler.indexing.DummyIndexer"
-  #   parallelism: 1
 
 
 streams:
@@ -114,24 +111,8 @@ streams:
     grouping:
       type: LOCAL_OR_SHUFFLE
 
-  # - from: "spout"
-  #   to: "ssbolt"
-  #   grouping:
-  #     type: LOCAL_OR_SHUFFLE
-
-  # - from: "spout"
-  #   to: "status"
-  #   grouping:
-  #     type: LOCAL_OR_SHUFFLE
-  #     streamId: "status"
   - from: "spout"
     to: "devnull"
     grouping:
       type: LOCAL_OR_SHUFFLE
       streamId: "status"
-
-  # - from: "ssbolt"
-  #   to: "status"
-  #   grouping:
-  #     type: LOCAL_OR_SHUFFLE
-  #     streamId: "status"

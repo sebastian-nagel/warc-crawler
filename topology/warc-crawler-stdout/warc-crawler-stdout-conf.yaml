@@ -1,0 +1,69 @@
+config: 
+  topology.workers: 1
+  topology.message.timeout.secs: 60
+  topology.max.spout.pending: 200
+  topology.backpressure.enable: true
+  topology.debug: false
+
+  # exact counts, no sampled metrics
+  topology.stats.sample.rate: 1.0
+  # (note: turn on sampling for better performance,
+  #        comment out to use default sample rate)
+
+  # override the JVM parameters for the workers
+  topology.worker.childopts: "-Xmx4g -Djava.net.preferIPv4Stack=true"
+
+  # mandatory when using Flux
+  topology.kryo.register:
+    - com.digitalpebble.stormcrawler.Metadata
+
+  # content limit for HTTP payload
+  http.content.limit: 1048576
+
+  # store partial fetches as trimmed content (some content has been fetched,
+  # but reading more data from socket failed, eg. because of a network timeout)
+  http.content.partial.as.trimmed: true
+
+  # store HTTP headers (required for WARC files)
+  http.store.headers: true
+
+  ##########################################################
+  ### configuration of text extraction and indexing
+
+  # URL filter and normalizer configuration
+  urlfilters.config.file: "index-urlfilters.json"
+
+  # parse filters to add additional fields, eg. via XPath expressions
+  parsefilters.config.file: "index-parsefilters.json"
+  
+  # do not emit outlinks to avoid flooding the status index
+  # with outgoing links
+  parser.emitOutlinks: false
+
+  # text extraction for JSoupParserBolt
+  textextractor.include.pattern:
+   - DIV[id="maincontent"]
+   - DIV[itemprop="articleBody"]
+   - ARTICLE
+
+  textextractor.exclude.tags:
+   - STYLE
+   - SCRIPT
+
+  # configuration for the classes extending AbstractIndexerBolt
+  # indexer.md.filter: "someKey=aValue"
+  indexer.url.fieldname: "url"
+  indexer.text.fieldname: "content"
+  indexer.canonical.name: "canonical"
+  indexer.md.mapping:
+   - parse.domain=domain
+   - parse.title=title
+   - parse.keywords=keywords
+   - parse.description=description
+   - parse.site_name=sitename
+   - parse.favicon=favicon
+   - parse.feedlink=feedlink
+   - parse.image=pageimage
+   - parse.type=pagetype
+   - parse.pubdate=publicationdate
+   - protocol._request.time_=capturetime
