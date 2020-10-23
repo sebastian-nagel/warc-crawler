@@ -1,0 +1,110 @@
+version: "3.6"
+
+services:
+
+  # Apache Storm components
+  # - Zookeeper coordinates the communication between Nimbus and the Supervisors
+  zookeeper:
+    image: zookeeper:${ZOOKEEPER_VERSION:-3.6.2}
+    container_name: zookeeper
+    restart: always
+  # - the daemon Nimbus runs on the master node
+  storm-nimbus:
+    image: storm:${STORM_VERSION:-1.2.3}
+    container_name: storm-nimbus
+    command: storm nimbus
+    depends_on:
+      - zookeeper
+    links:
+      - zookeeper
+    ports:
+      - 6627:6627
+    restart: always
+  # - the Supervisors run on the worker nodes
+  storm-supervisor:
+    image: storm:${STORM_VERSION:-1.2.3}
+    container_name: storm-supervisor
+    command: storm supervisor
+    depends_on:
+      - zookeeper
+      - storm-nimbus
+    links:
+      - zookeeper
+      - storm-nimbus:nimbus
+    # supervisor launches the worker processes
+    # which need to be able to access
+    # - (in case a indexing topology is run) the
+    #   Elasticsearch (http://elasticsearch:9200/) and
+      - elasticsearch
+    #   Solr (http://solr:8983/) containers
+      - solr
+    # - and the WARC input
+    volumes:
+      - ${WARCINPUT:-./warcdata}:/data/input
+    restart: always
+  # - the Storm UI provides diagnostics about the Storm cluster
+  storm-ui:
+    image: storm:${STORM_VERSION:-1.2.3}
+    container_name: storm-ui
+    command: storm ui
+    depends_on:
+      - storm-nimbus
+    links:
+      - storm-nimbus:nimbus
+    ports:
+      - 8080:8080
+    restart: always
+
+  # Elasticsearch and Kibana
+  # cf. https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
+  elasticsearch:
+    image: elasticsearch:${ELASTICSEARCH_VERSION:-7.9.2}
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    restart: always
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=elasticsearch
+      - cluster.initial_master_nodes=elasticsearch
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms8g -Xmx8g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+  kibana:
+    image: kibana:${ELASTICSEARCH_VERSION:-7.9.2}
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    # volumes:
+    #   - elasticsearch:/usr/share/elasticsearch/data
+    restart: always
+
+  # Apache Solr
+  solr:
+    image: solr:${SOLR_VERSION:-8.6.3}
+    container_name: solr
+    ports:
+      - "8983:8983"
+    volumes:
+      - ${STORM_CRAWLER_SOLR_CONF:-./storm-crawler/external/solr/cores}:/storm-crawler-solr-conf
+    restart: always
+
+  # - to launch a topology
+  # - will exit on startup
+  storm-crawler:
+    build: .
+    container_name: storm-crawler
+    command: /bin/bash
+    depends_on:
+      - storm-nimbus
+    links:
+      - storm-nimbus:nimbus
+    volumes:
+      - ${WARCINPUT:-./warcdata}:/data/input
+    restart: "no"
+

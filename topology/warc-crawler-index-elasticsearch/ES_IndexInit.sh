@@ -1,3 +1,7 @@
+#!/bin/bash
+
+set -e
+
 ESHOST="http://localhost:9200"
 ESCREDENTIALS="-u elastic:passwordhere"
 
@@ -74,6 +78,7 @@ curl $ESCREDENTIALS -s -XPUT $ESHOST/_ilm/policy/7d-deletion_policy -H 'Content-
 }
 '
 
+echo
 echo "Creating metrics index with mapping"
 
 # http://localhost:9200/metrics/_mapping/status?pretty

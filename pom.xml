@@ -114,6 +114,11 @@
 			<version>${storm-crawler.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.digitalpebble.stormcrawler</groupId>
+			<artifactId>storm-crawler-solr</artifactId>
+			<version>${storm-crawler.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.storm</groupId>
 			<artifactId>storm-core</artifactId>
 			<version>1.2.3</version>

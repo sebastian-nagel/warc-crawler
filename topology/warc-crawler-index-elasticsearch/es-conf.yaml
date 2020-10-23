@@ -5,7 +5,7 @@ config:
   # ES indexer bolt
   # adresses can be specified as a full URL
   # if not we assume that the protocol is http and the port 9200
-  es.indexer.addresses: "http://localhost:9200"
+  es.indexer.addresses: "http://elasticsearch:9200"
   es.indexer.index.name: "content"
   # es.indexer.pipeline: "_PIPELINE_"
   es.indexer.create: false
@@ -14,11 +14,11 @@ config:
   es.indexer.concurrentRequests: 1
   
   # ES metricsConsumer
-  es.metrics.addresses: "http://localhost:9200"
+  es.metrics.addresses: "http://elasticsearch:9200"
   es.metrics.index.name: "metrics"
   
   # ES spout and persistence bolt
-  es.status.addresses: "http://localhost:9200"
+  es.status.addresses: "http://elasticsearch:9200"
   es.status.index.name: "status"
   #es.status.user: "USERNAME"
   #es.status.password: "PASSWORD"
