@@ -1,16 +1,17 @@
 # Let StormCrawler “Crawl” WARC Files
 
-WARNING: This project is based on a development version of StormCrawler.
+WARNING: The “main” branch of this project is based on a development version of StormCrawler. Stable branches are available for:
+- [storm-crawler-1.18](../../tree/storm-crawler-1.18) running on Storm 1.2.3
 
 For more information about processing (and creating) WARC archives using StormCrawler, see
-- related StormCrawler issues: /DigitalPebble/storm-crawler#755
+- related StormCrawler issues: [#755](https://github.com/DigitalPebble/storm-crawler/issues/755)
 - StormCrawler's [WARC module README](https://github.com/DigitalPebble/storm-crawler/blob/master/external/warc/README.md)
 - StormCrawler's [WARCSpout](https://github.com/DigitalPebble/storm-crawler/blob/master/external/warc/src/main/java/com/digitalpebble/stormcrawler/warc/WARCSpout.java)
 
 
 ## Build the Project
 
-- install Apache Storm 1.2.3 - see [Storm setup](https://storm.apache.org/releases/1.2.3/index.html#setup-and-deploying) or use Docker (instructions below)
+- install Apache Storm 2.3.0 - see [Storm setup](https://storm.apache.org/releases/2.3.0/index.html#setup-and-deploying) or use Docker (instructions below)
 - clone and compile [StormCrawler](https://github.com/DigitalPebble/storm-crawler)
   ``` sh
   git clone https://github.com/DigitalPebble/storm-crawler.git
@@ -19,6 +20,8 @@ For more information about processing (and creating) WARC archives using StormCr
   cd ..
   ```
   Maven will deploy the StormCrawler jars into your local Maven repository.
+
+  Note: this step is obsolete if a released StormCrawler version is used (see also stable storm-crawler-x.x branches).
 - build this project:
   ``` sh
   mvn clean package
@@ -43,17 +46,17 @@ TODO
 
 ### Run a Flux Topology
 
-To submit a [Flux](https://storm.apache.org/releases/1.2.3/flux.html) to do the same:
+To submit a [Flux](https://storm.apache.org/releases/2.3.0/flux.html) to do the same:
 
 ``` sh
-storm jar target/warc-crawler-1.18.jar  org.apache.storm.flux.Flux --local topology/warc-crawler-stdout/warc-crawler-stdout.flux --sleep 86400000
+storm local target/warc-crawler-2.2-SNAPSHOT.jar org.apache.storm.flux.Flux topology/warc-crawler-stdout/warc-crawler-stdout.flux
 ```
 
 This will run the topology in local mode.
 
-Replace `--local` by `--remote` to run the topology in distributed mode:
+The command `storm jar ...` is used to run the topology in distributed mode:
 ``` sh
-storm jar target/warc-crawler-1.18.jar org.apache.storm.flux.Flux --remote topology/warc-crawler-stdout/warc-crawler-stdout.flux
+storm jar target/warc-crawler-2.2-SNAPSHOT.jar org.apache.storm.flux.Flux topology/warc-crawler-stdout/warc-crawler-stdout.flux
 ```
 
 It is best to run the topology in distributed mode to benefit from the Storm UI and logging. In that case, the topology runs continuously, as intended.
@@ -66,9 +69,9 @@ Note that in local mode, Flux uses a default TTL for the topology of 60 secs. Th
 A Java topology class using the storm command:
 
 ``` sh
-storm jar target/warc-crawler-1.18.jar org.commoncrawl.stormcrawler.CrawlTopology -conf topology/warc-crawler-stdout/warc-crawler-stdout-conf.yaml -local
+storm local target/warc-crawler-2.2-SNAPSHOT.jar --local-ttl 600 -- org.commoncrawl.stormcrawler.CrawlTopology -conf topology/warc-crawler-stdout/warc-crawler-stdout-conf.yaml
 ```
-Simply remove the `-local` argument to run the topology in distributed mode.
+This will launch the crawl topology in local mode for 10 minutes (600 seconds). Use `storm jar ...` to run the topology in distributed mode. Note: `--` is required to signal that remaining options (here `-conf`) are not consumed by `storm` and passed to the CrawlTopology as arguments.
 
 
 ## Alternative Topologies
@@ -77,7 +80,7 @@ Several Flux topologies are provided to test and evaluate crawling of WARC archi
 
 ### DevNull Topology
 
-[warc-crawler-dev-null](topology/warc-crawler-dev-null/) runs a single WARCSpout which sends the page captures to [DevNullBolt](https://storm.apache.org/releases/1.2.3/javadocs/org/apache/storm/perf/bolt/DevNullBolt.html) which (you guess it) only ack's and discards each tuple. Useful to measure the performance of the WARCSpout.
+[warc-crawler-dev-null](topology/warc-crawler-dev-null/) runs a single WARCSpout which sends the page captures to [DevNullBolt](https://storm.apache.org/releases/2.3.0/javadocs/org/apache/storm/perf/bolt/DevNullBolt.html) which (you guess it) only ack's and discards each tuple. Useful to measure the performance of the WARCSpout.
 
 ### Stdout Topology
 
@@ -122,7 +125,7 @@ See also the documentation of [StormCrawler's Elasticsearch module](https://gith
 [warc-crawler-index-solr](topology/warc-crawler-index-solr/) reads WARC files, parses HTML pages, extracts text and metadata and sends documents into Solr for indexing.
 
 As a requirement Solr must be installed and running:
-- install [Solr](https://lucene.apache.org/solr/) 8.8.0
+- install [Solr](https://lucene.apache.org/solr/) 8.10.1
 - start Solr
 - initialize the cores using [StormCrawler's Solr core config](https://github.com/DigitalPebble/storm-crawler/tree/master/external/solr/cores)
   ```
@@ -158,7 +161,7 @@ docker-compose run --rm storm-crawler
 
 and in the running container our topology:
 ```
-$warc-crawler/> storm jar warc-crawler.jar org.apache.storm.flux.Flux --remote topology/warc-crawler-dev-null/warc-crawler-dev-null.flux
+$warc-crawler/> storm jar warc-crawler.jar org.apache.storm.flux.Flux topology/warc-crawler-dev-null/warc-crawler-dev-null.flux
 ```
 
 Let's check whether topology is running:
@@ -197,7 +200,7 @@ docker-compose down
 
 Of course, the topology could be also launched in a single command:
 ```
-docker-compose run --rm storm-crawler storm jar warc-crawler.jar org.apache.storm.flux.Flux --remote topology/warc-crawler-dev-null/warc-crawler-dev-null.flux
+docker-compose run --rm storm-crawler storm jar warc-crawler.jar org.apache.storm.flux.Flux topology/warc-crawler-dev-null/warc-crawler-dev-null.flux
 ```
 
 #### Run Elasticsearch Topologies on Docker
@@ -207,7 +210,7 @@ First, the Elasticsearch indices need to be initialized by running [ES_IndexInit
 Then the Elasticsearch topology can be launched via
 ```
 docker-compose run --rm storm-crawler storm jar warc-crawler.jar org.apache.storm.flux.Flux \
-   --remote topology/warc-crawler-index-elasticsearch/warc-crawler-index-elasticsearch.flux
+   topology/warc-crawler-index-elasticsearch/warc-crawler-index-elasticsearch.flux
 ```
 
 #### Run Solr Topologies on Docker
@@ -232,5 +235,5 @@ To create the Solr cores, the "solr" container needs access to [StormCrawler's S
 - finally launch the Solr topology
   ```
   docker-compose run --rm storm-crawler storm jar warc-crawler.jar org.apache.storm.flux.Flux \
-     --remote topology/warc-crawler-index-solr/warc-crawler-index-solr.flux
+     topology/warc-crawler-index-solr/warc-crawler-index-solr.flux
   ```

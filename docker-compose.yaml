@@ -5,14 +5,17 @@ services:
   # Apache Storm components
   # - Zookeeper coordinates the communication between Nimbus and the Supervisors
   zookeeper:
-    image: zookeeper:${ZOOKEEPER_VERSION:-3.6.2}
+    image: zookeeper:${ZOOKEEPER_VERSION:-3.6.3}
     container_name: zookeeper
     restart: always
   # - the daemon Nimbus runs on the master node
   storm-nimbus:
-    image: storm:${STORM_VERSION:-1.2.3}
+    image: storm:${STORM_VERSION:-2.3.0}
     container_name: storm-nimbus
-    command: storm nimbus
+    ## must override worker.childopts and remove options not available
+    ## for Java 11: `-XX:+PrintGCDateStamps`, etc
+    #command: storm nimbus
+    command: storm nimbus -c worker.childopts="-Xmx%HEAP-MEM%m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=artifacts/heapdump"
     depends_on:
       - zookeeper
     links:
@@ -22,9 +25,12 @@ services:
     restart: always
   # - the Supervisors run on the worker nodes
   storm-supervisor:
-    image: storm:${STORM_VERSION:-1.2.3}
+    image: storm:${STORM_VERSION:-2.3.0}
     container_name: storm-supervisor
-    command: storm supervisor
+    ## must override worker.childopts and remove options not available
+    ## for Java 11: `-XX:+PrintGCDateStamps`, etc
+    #command: storm supervisor
+    command: storm supervisor -c worker.childopts="-Xmx%HEAP-MEM%m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=artifacts/heapdump"
     depends_on:
       - zookeeper
       - storm-nimbus
@@ -44,7 +50,7 @@ services:
     restart: always
   # - the Storm UI provides diagnostics about the Storm cluster
   storm-ui:
-    image: storm:${STORM_VERSION:-1.2.3}
+    image: storm:${STORM_VERSION:-2.3.0}
     container_name: storm-ui
     command: storm ui
     depends_on:
@@ -58,7 +64,7 @@ services:
   # Elasticsearch and Kibana
   # cf. https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
   elasticsearch:
-    image: elasticsearch:${ELASTICSEARCH_VERSION:-7.9.3}
+    image: elasticsearch:${ELASTICSEARCH_VERSION:-7.15.1}
     container_name: elasticsearch
     ports:
       - "9200:9200"
@@ -76,7 +82,7 @@ services:
         soft: -1
         hard: -1
   kibana:
-    image: kibana:${ELASTICSEARCH_VERSION:-7.9.3}
+    image: kibana:${ELASTICSEARCH_VERSION:-7.15.1}
     container_name: kibana
     ports:
       - "5601:5601"
@@ -86,7 +92,7 @@ services:
 
   # Apache Solr
   solr:
-    image: solr:${SOLR_VERSION:-8.8.0}
+    image: solr:${SOLR_VERSION:-8.10.1}
     container_name: solr
     ports:
       - "8983:8983"

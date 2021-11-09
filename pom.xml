@@ -6,11 +6,11 @@
 	<parent>
 		<artifactId>storm-crawler</artifactId>
 		<groupId>com.digitalpebble.stormcrawler</groupId>
-		<version>1.18</version>
+		<version>2.2-SNAPSHOT</version>
 	</parent>
 	<groupId>org.commoncrawl.stormcrawler</groupId>
 	<artifactId>warc-crawler</artifactId>
-	<version>1.18</version>
+	<version>2.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<licenses>
 		<license>
@@ -21,8 +21,9 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<storm-crawler.version>1.18</storm-crawler.version>
-		<storm-core.version>1.2.3</storm-core.version>
+		<storm-crawler.version>2.2-SNAPSHOT</storm-crawler.version>
+		<storm-core.version>2.3.0</storm-core.version>
+		<jackson-databind.version>2.11.1</jackson-databind.version>
 	</properties>
 
 	<build>
@@ -165,6 +166,16 @@
 			<groupId>org.apache.storm</groupId>
 			<artifactId>storm-perf</artifactId>
 			<version>${storm-core.version}</version>
+		</dependency>
+		<!--
+		    required only in local mode only:
+		    need to pack the jackson-databind required by parse filters and Tika,
+		    cf. https://github.com/DigitalPebble/storm-crawler/issues/880
+		-->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson-databind.version}</version>
 		</dependency>
 	</dependencies>
 </project>
