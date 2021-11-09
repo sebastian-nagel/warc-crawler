@@ -46,14 +46,14 @@ TODO
 To submit a [Flux](https://storm.apache.org/releases/1.2.3/flux.html) to do the same:
 
 ``` sh
-storm jar target/warc-crawler-1.18-SNAPSHOT.jar  org.apache.storm.flux.Flux --local topology/warc-crawler-stdout/warc-crawler-stdout.flux --sleep 86400000
+storm jar target/warc-crawler-1.18.jar  org.apache.storm.flux.Flux --local topology/warc-crawler-stdout/warc-crawler-stdout.flux --sleep 86400000
 ```
 
 This will run the topology in local mode.
 
 Replace `--local` by `--remote` to run the topology in distributed mode:
 ``` sh
-storm jar target/warc-crawler-1.18-SNAPSHOT.jar org.apache.storm.flux.Flux --remote topology/warc-crawler-stdout/warc-crawler-stdout.flux
+storm jar target/warc-crawler-1.18.jar org.apache.storm.flux.Flux --remote topology/warc-crawler-stdout/warc-crawler-stdout.flux
 ```
 
 It is best to run the topology in distributed mode to benefit from the Storm UI and logging. In that case, the topology runs continuously, as intended.
@@ -66,7 +66,7 @@ Note that in local mode, Flux uses a default TTL for the topology of 60 secs. Th
 A Java topology class using the storm command:
 
 ``` sh
-storm jar target/warc-crawler-1.18-SNAPSHOT.jar org.commoncrawl.stormcrawler.CrawlTopology -conf topology/warc-crawler-stdout/warc-crawler-stdout-conf.yaml -local
+storm jar target/warc-crawler-1.18.jar org.commoncrawl.stormcrawler.CrawlTopology -conf topology/warc-crawler-stdout/warc-crawler-stdout-conf.yaml -local
 ```
 Simply remove the `-local` argument to run the topology in distributed mode.
 
@@ -122,7 +122,7 @@ See also the documentation of [StormCrawler's Elasticsearch module](https://gith
 [warc-crawler-index-solr](topology/warc-crawler-index-solr/) reads WARC files, parses HTML pages, extracts text and metadata and sends documents into Solr for indexing.
 
 As a requirement Solr must be installed and running:
-- install [Solr](https://lucene.apache.org/solr/) 8.6.3
+- install [Solr](https://lucene.apache.org/solr/) 8.8.0
 - start Solr
 - initialize the cores using [StormCrawler's Solr core config](https://github.com/DigitalPebble/storm-crawler/tree/master/external/solr/cores)
   ```

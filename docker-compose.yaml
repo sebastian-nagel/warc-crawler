@@ -58,7 +58,7 @@ services:
   # Elasticsearch and Kibana
   # cf. https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
   elasticsearch:
-    image: elasticsearch:${ELASTICSEARCH_VERSION:-7.9.2}
+    image: elasticsearch:${ELASTICSEARCH_VERSION:-7.9.3}
     container_name: elasticsearch
     ports:
       - "9200:9200"
@@ -76,7 +76,7 @@ services:
         soft: -1
         hard: -1
   kibana:
-    image: kibana:${ELASTICSEARCH_VERSION:-7.9.2}
+    image: kibana:${ELASTICSEARCH_VERSION:-7.9.3}
     container_name: kibana
     ports:
       - "5601:5601"
@@ -86,7 +86,7 @@ services:
 
   # Apache Solr
   solr:
-    image: solr:${SOLR_VERSION:-8.6.3}
+    image: solr:${SOLR_VERSION:-8.8.0}
     container_name: solr
     ports:
       - "8983:8983"

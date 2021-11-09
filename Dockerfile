@@ -10,7 +10,7 @@ RUN apt-get update -qq && \
 #
 # Storm crawler / WARC crawler
 #
-ENV CRAWLER_VERSION=1.18-SNAPSHOT
+ENV CRAWLER_VERSION=1.18
 RUN mkdir /warc-crawler && \
     chmod -R a+rx /warc-crawler
 
