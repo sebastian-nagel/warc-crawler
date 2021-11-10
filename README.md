@@ -1,9 +1,9 @@
 # Let StormCrawler “Crawl” WARC Files
 
-WARNING: This project is based on a development version of StormCrawler.
+NOTICE: You've checked out the branch “storm-crawler-1.18” based on the released StormCrawler version 1.18 running on Storm 1.2.3.
 
 For more information about processing (and creating) WARC archives using StormCrawler, see
-- related StormCrawler issues: /DigitalPebble/storm-crawler#755
+related StormCrawler issues: [#755](https://github.com/DigitalPebble/storm-crawler/issues/755)
 - StormCrawler's [WARC module README](https://github.com/DigitalPebble/storm-crawler/blob/master/external/warc/README.md)
 - StormCrawler's [WARCSpout](https://github.com/DigitalPebble/storm-crawler/blob/master/external/warc/src/main/java/com/digitalpebble/stormcrawler/warc/WARCSpout.java)
 
