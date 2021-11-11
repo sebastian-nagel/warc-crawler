@@ -16,11 +16,12 @@ config:
   # mandatory when using Flux
   topology.kryo.register:
     - com.digitalpebble.stormcrawler.Metadata
+    - com.digitalpebble.stormcrawler.persistence.Status
 
   # set to 0 to deactivate debugging
   topology.eventlogger.executors: 0
-  
-  #Metrics consumers:
+
+  # Metrics consumers:
   topology.metrics.consumer.register:
      - class: "org.apache.storm.metric.LoggingMetricsConsumer"
        parallelism.hint: 1
@@ -56,7 +57,7 @@ config:
    - last-modified
    - signature
    - fetchInterval
-
+   - protocol.http.trimmed
 
   ##########################################################
   ### configuration of text extraction and indexing
@@ -66,7 +67,7 @@ config:
 
   # parse filters to add additional fields, eg. via XPath expressions
   parsefilters.config.file: "index-parsefilters.json"
-  
+
   # do not emit outlinks to avoid flooding the status index
   # with outgoing links
   parser.emitOutlinks: false
@@ -81,12 +82,27 @@ config:
    - STYLE
    - SCRIPT
 
+  # needed for parsing with Tika
+  jsoup.treat.non.html.as.error: false
+
+  # restrics the documents types to be parsed with Tika
+  parser.mimetype.whitelist:
+   #- application/.+word.*
+   #- application/.+excel.*
+   #- application/.+powerpoint.*
+   #- application/.*pdf.*
+   - .*    # for testing: try all non-HTML documents
+
+  # Tika parser configuration file
+  parse.tika.config.file: "tika-config.xml"
+
   # configuration for the classes extending AbstractIndexerBolt
   # indexer.md.filter: "someKey=aValue"
   indexer.url.fieldname: "url"
   indexer.text.fieldname: "content"
   indexer.canonical.name: "canonical"
   indexer.md.mapping:
+   - parse.Content-Type=mimetype
    - parse.domain=domain
    - parse.title=title
    - parse.keywords=keywords

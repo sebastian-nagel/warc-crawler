@@ -24,6 +24,8 @@ import com.digitalpebble.stormcrawler.Constants;
 import com.digitalpebble.stormcrawler.bolt.JSoupParserBolt;
 import com.digitalpebble.stormcrawler.indexing.StdOutIndexer;
 import com.digitalpebble.stormcrawler.persistence.StdOutStatusUpdater;
+import com.digitalpebble.stormcrawler.tika.ParserBolt;
+import com.digitalpebble.stormcrawler.tika.RedirectionBolt;
 import com.digitalpebble.stormcrawler.warc.WARCSpout;
 
 /**
@@ -41,17 +43,24 @@ public class CrawlTopology extends ConfigurableTopology {
 
         builder.setSpout("spout", new WARCSpout("/data/input/", "*.{paths,txt}"));
 
-        builder.setBolt("parse", new JSoupParserBolt())
+        builder.setBolt("jsoup", new JSoupParserBolt())
                 .localOrShuffleGrouping("spout");
 
+        builder.setBolt("shunt", new RedirectionBolt())
+                .localOrShuffleGrouping("jsoup");
+
+        builder.setBolt("tika", new ParserBolt())
+                .localOrShuffleGrouping("shunt", "tika");
+
         builder.setBolt("index", new StdOutIndexer())
-                .localOrShuffleGrouping("parse");
+                .localOrShuffleGrouping("shunt").localOrShuffleGrouping("tika");
 
         Fields furl = new Fields("url");
 
         builder.setBolt("status", new StdOutStatusUpdater()) //
                 .fieldsGrouping("spout", Constants.StatusStreamName, furl)
-                .fieldsGrouping("parse", Constants.StatusStreamName, furl)
+                .fieldsGrouping("jsoup", Constants.StatusStreamName, furl)
+                .fieldsGrouping("tika", Constants.StatusStreamName, furl)
                 .fieldsGrouping("index", Constants.StatusStreamName, furl);
 
         return submit("crawl", conf, builder);

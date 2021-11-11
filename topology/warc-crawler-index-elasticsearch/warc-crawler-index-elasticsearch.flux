@@ -26,8 +26,14 @@ spouts:
       - "*.{paths,txt}"
 
 bolts:
-  - id: "parse"
+  - id: "jsoup"
     className: "com.digitalpebble.stormcrawler.bolt.JSoupParserBolt"
+    parallelism: 2
+  - id: "shunt"
+    className: "com.digitalpebble.stormcrawler.tika.RedirectionBolt"
+    parallelism: 2
+  - id: "tika"
+    className: "com.digitalpebble.stormcrawler.tika.ParserBolt"
     parallelism: 2
   - id: "index"
     className: "com.digitalpebble.stormcrawler.elasticsearch.bolt.IndexerBolt"
@@ -41,7 +47,7 @@ bolts:
 
 streams:
   - from: "spout"
-    to: "parse"
+    to: "jsoup"
     grouping:
       type: LOCAL_OR_SHUFFLE
 
@@ -57,12 +63,35 @@ streams:
       args: ["url"]
       streamId: "status"
 
-  - from: "parse"
+  - from: "jsoup"
+    to: "shunt"
+    grouping:
+      type: LOCAL_OR_SHUFFLE
+
+  - from: "shunt"
+    to: "tika"
+    grouping:
+      type: LOCAL_OR_SHUFFLE
+      streamId: "tika"
+
+  - from: "tika"
     to: "index"
     grouping:
       type: LOCAL_OR_SHUFFLE
 
-  - from: "parse"
+  - from: "shunt"
+    to: "index"
+    grouping:
+      type: LOCAL_OR_SHUFFLE
+
+  - from: "jsoup"
+    to: "status"
+    grouping:
+      type: FIELDS
+      args: ["url"]
+      streamId: "status"
+
+  - from: "tika"
     to: "status"
     grouping:
       type: FIELDS

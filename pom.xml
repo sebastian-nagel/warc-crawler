@@ -143,6 +143,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.digitalpebble.stormcrawler</groupId>
+			<artifactId>storm-crawler-tika</artifactId>
+			<version>${storm-crawler.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.digitalpebble.stormcrawler</groupId>
 			<artifactId>storm-crawler-elasticsearch</artifactId>
 			<version>${storm-crawler.version}</version>
 		</dependency>

@@ -16,6 +16,7 @@ config:
   # mandatory when using Flux
   topology.kryo.register:
     - com.digitalpebble.stormcrawler.Metadata
+    - com.digitalpebble.stormcrawler.persistence.Status
 
   # content limit for HTTP payload
   http.content.limit: 1048576
@@ -27,6 +28,18 @@ config:
   # store HTTP headers (required for WARC files)
   http.store.headers: true
 
+  # lists the metadata to persist to storage
+  # these are not transfered to the outlinks
+  metadata.persist:
+   - _redirTo
+   - fetch.statusCode
+   - error.cause
+   - error.source
+   - last-modified
+   - signature
+   - fetchInterval
+   - protocol.http.trimmed
+
   ##########################################################
   ### configuration of text extraction and indexing
 
@@ -35,7 +48,7 @@ config:
 
   # parse filters to add additional fields, eg. via XPath expressions
   parsefilters.config.file: "index-parsefilters.json"
-  
+
   # do not emit outlinks to avoid flooding the status index
   # with outgoing links
   parser.emitOutlinks: false
@@ -50,12 +63,27 @@ config:
    - STYLE
    - SCRIPT
 
+  # needed for parsing with Tika
+  jsoup.treat.non.html.as.error: false
+
+  # Tika parser configuration file
+  parse.tika.config.file: "tika-config.xml"
+
+  # restrics the documents types to be parsed with Tika
+  parser.mimetype.whitelist:
+   #- application/.+word.*
+   #- application/.+excel.*
+   #- application/.+powerpoint.*
+   #- application/.*pdf.*
+   - .*    # for testing: try all non-HTML documents
+
   # configuration for the classes extending AbstractIndexerBolt
   # indexer.md.filter: "someKey=aValue"
   indexer.url.fieldname: "url"
   indexer.text.fieldname: "content"
   indexer.canonical.name: "canonical"
   indexer.md.mapping:
+   - parse.Content-Type=mimetype
    - parse.domain=domain
    - parse.title=title
    - parse.keywords=keywords
