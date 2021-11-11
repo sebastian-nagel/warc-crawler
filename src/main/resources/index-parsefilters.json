@@ -18,17 +18,23 @@
             "//*[@property=\"og:url\"]/@content"
         ],
         "parse.description": [
-            "//*[@name=\"description\"]/@content",
-            "//*[@name=\"Description\"]/@content",
+            "//META[@name=\"description\"]/@content",
+            "//META[@name=\"Description\"]/@content",
+            "//META[@name=\"dc:description\"]/@content",
             "//META[@property=\"og:description\"]/@content"
          ],
         "parse.title": [
             "(//TITLE)[1]",
             "//META[@name=\"title\"]/@content",
-            "//*[@property=\"og:title\"]/@content",
+            "//META[@name=\"dc:title\"]/@content",
+            "//META[@property=\"og:title\"]/@content",
             "(//H1)[1]"
          ],
-         "parse.keywords": "//META[@name=\"keywords\"]/@content",
+         "parse.keywords": [
+            "//META[@name=\"keywords\"]/@content",
+            "//META[@name=\"meta:keyword\"]/@content",
+            "//META[@name=\"dc:subject\"]/@content"
+         ],
          "parse.pubdate": [
             "//*[@property=\"article:published_time\"]/@content",
             "//*[@itemprop=\"datePublished\"]/@datetime",
