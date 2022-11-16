@@ -23,7 +23,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<storm-crawler.version>2.2-SNAPSHOT</storm-crawler.version>
 		<storm-core.version>2.3.0</storm-core.version>
-		<jackson-databind.version>2.11.1</jackson-databind.version>
+		<jackson-databind.version>2.12.7.1</jackson-databind.version>
 	</properties>
 
 	<build>
