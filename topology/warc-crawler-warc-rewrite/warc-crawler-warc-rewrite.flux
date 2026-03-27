@@ -20,7 +20,7 @@ config:
 
 components:
   - id: "WARCFileNameFormat"
-    className: "com.digitalpebble.stormcrawler.warc.WARCFileNameFormat"
+    className: "org.apache.stormcrawler.warc.WARCFileNameFormat"
     configMethods:
       - name: "withPath"
         args:
@@ -29,7 +29,7 @@ components:
         args:
           - "SC-WARC-REWRITE"
   - id: "WARCFileRotationPolicy"
-    className: "com.digitalpebble.stormcrawler.warc.FileTimeSizeRotationPolicy"
+    className: "org.apache.stormcrawler.warc.FileTimeSizeRotationPolicy"
     constructorArgs:
       - 1024
       - MB
@@ -76,7 +76,7 @@ components:
 
 spouts:
   - id: "spout"
-    className: "com.digitalpebble.stormcrawler.warc.WARCSpout"
+    className: "org.apache.stormcrawler.warc.WARCSpout"
     parallelism: 1
     constructorArgs:
       - "/data/input/"
@@ -84,7 +84,7 @@ spouts:
 
 bolts:
   - id: "warc"
-    className: "com.digitalpebble.stormcrawler.warc.WARCHdfsBolt"
+    className: "org.apache.stormcrawler.warc.WARCHdfsBolt"
     parallelism: 1
     configMethods:
       - name: "withFileNameFormat"

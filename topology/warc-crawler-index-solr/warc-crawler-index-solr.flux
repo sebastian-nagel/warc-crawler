@@ -19,7 +19,7 @@ includes:
 
 spouts:
   - id: "spout"
-    className: "com.digitalpebble.stormcrawler.warc.WARCSpout"
+    className: "org.apache.stormcrawler.warc.WARCSpout"
     parallelism: 1
     constructorArgs:
       - "/data/input/"
@@ -27,19 +27,19 @@ spouts:
 
 bolts:
   - id: "jsoup"
-    className: "com.digitalpebble.stormcrawler.bolt.JSoupParserBolt"
+    className: "org.apache.stormcrawler.bolt.JSoupParserBolt"
     parallelism: 2
   - id: "shunt"
-    className: "com.digitalpebble.stormcrawler.tika.RedirectionBolt"
+    className: "org.apache.stormcrawler.tika.RedirectionBolt"
     parallelism: 2
   - id: "tika"
-    className: "com.digitalpebble.stormcrawler.tika.ParserBolt"
+    className: "org.apache.stormcrawler.tika.ParserBolt"
     parallelism: 2
   - id: "index"
-    className: "com.digitalpebble.stormcrawler.solr.bolt.IndexerBolt"
+    className: "org.apache.stormcrawler.solr.bolt.IndexerBolt"
     parallelism: 1
   - id: "status"
-    className: "com.digitalpebble.stormcrawler.solr.persistence.StatusUpdaterBolt"
+    className: "org.apache.stormcrawler.solr.persistence.StatusUpdaterBolt"
     parallelism: 1
 
 streams:

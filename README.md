@@ -1,31 +1,16 @@
 # Let StormCrawler “Crawl” WARC Files
 
-WARNING: The “main” branch of this project is based on a development version of StormCrawler. Stable branches are available for:
-- [storm-crawler-1.18](../../tree/storm-crawler-1.18) running on Storm 1.2.3
-
 For more information about processing (and creating) WARC archives using StormCrawler, see
-- related StormCrawler issues: [#755](https://github.com/DigitalPebble/storm-crawler/issues/755)
-- StormCrawler's [WARC module README](https://github.com/DigitalPebble/storm-crawler/blob/master/external/warc/README.md)
-- StormCrawler's [WARCSpout](https://github.com/DigitalPebble/storm-crawler/blob/master/external/warc/src/main/java/com/digitalpebble/stormcrawler/warc/WARCSpout.java)
+- related StormCrawler issues: [#755](https://github.com/apache/stormcrawler/issues/755)
+- StormCrawler's [WARC module README](https://github.com/apache/stormcrawler/blob/master/external/warc/README.md)
+- StormCrawler's [WARCSpout](https://github.com/apache/stormcrawler/blob/master/external/warc/src/main/java/org/apache/stormcrawler/warc/WARCSpout.java)
 
 
 ## Build the Project
 
-- install Apache Storm 2.3.0 - see [Storm setup](https://storm.apache.org/releases/2.3.0/index.html#setup-and-deploying) or use Docker (instructions below)
-- clone and compile [StormCrawler](https://github.com/DigitalPebble/storm-crawler)
-  ``` sh
-  git clone https://github.com/DigitalPebble/storm-crawler.git
-  cd storm-crawler
-  mvn clean install
-  cd ..
-  ```
-  Maven will deploy the StormCrawler jars into your local Maven repository.
-
-  Note: this step is obsolete if a released StormCrawler version is used (see also stable storm-crawler-x.x branches).
-- build this project:
-  ``` sh
-  mvn clean package
-  ```
+```sh
+mvn clean package
+```
 
 
 ## Create List of WARC Files To Process
@@ -46,17 +31,17 @@ TODO
 
 ### Run a Flux Topology
 
-To submit a [Flux](https://storm.apache.org/releases/2.3.0/flux.html) to do the same:
+To submit a [Flux](https://storm.apache.org/releases/2.8.4/flux.html) to do the same:
 
 ``` sh
-storm local target/warc-crawler-2.2-SNAPSHOT.jar org.apache.storm.flux.Flux topology/warc-crawler-stdout/warc-crawler-stdout.flux
+storm local target/warc-crawler-*.jar org.apache.storm.flux.Flux topology/warc-crawler-stdout/warc-crawler-stdout.flux
 ```
 
 This will run the topology in local mode.
 
 The command `storm jar ...` is used to run the topology in distributed mode:
 ``` sh
-storm jar target/warc-crawler-2.2-SNAPSHOT.jar org.apache.storm.flux.Flux topology/warc-crawler-stdout/warc-crawler-stdout.flux
+storm jar target/warc-crawler-*.jar org.apache.storm.flux.Flux topology/warc-crawler-stdout/warc-crawler-stdout.flux
 ```
 
 It is best to run the topology in distributed mode to benefit from the Storm UI and logging. In that case, the topology runs continuously, as intended.
@@ -69,7 +54,7 @@ Note that in local mode, Flux uses a default TTL for the topology of 60 secs. Th
 A Java topology class using the storm command:
 
 ``` sh
-storm local target/warc-crawler-2.2-SNAPSHOT.jar --local-ttl 600 -- org.commoncrawl.stormcrawler.CrawlTopology -conf topology/warc-crawler-stdout/warc-crawler-stdout-conf.yaml
+storm local target/warc-crawler-*.jar --local-ttl 600 -- org.commoncrawl.stormcrawler.CrawlTopology -conf topology/warc-crawler-stdout/warc-crawler-stdout-conf.yaml
 ```
 This will launch the crawl topology in local mode for 10 minutes (600 seconds). Use `storm jar ...` to run the topology in distributed mode. Note: `--` is required to signal that remaining options (here `-conf`) are not consumed by `storm` and passed to the CrawlTopology as arguments.
 
@@ -80,7 +65,7 @@ Several Flux topologies are provided to test and evaluate crawling of WARC archi
 
 ### DevNull Topology
 
-[warc-crawler-dev-null](topology/warc-crawler-dev-null/) runs a single WARCSpout which sends the page captures to [DevNullBolt](https://storm.apache.org/releases/2.3.0/javadocs/org/apache/storm/perf/bolt/DevNullBolt.html) which (you guess it) only ack's and discards each tuple. Useful to measure the performance of the WARCSpout.
+[warc-crawler-dev-null](topology/warc-crawler-dev-null/) runs a single WARCSpout which sends the page captures to [DevNullBolt](https://storm.apache.org/releases/2.4.0/javadocs/org/apache/storm/perf/bolt/DevNullBolt.html) which (you guess it) only ack's and discards each tuple. Useful to measure the performance of the WARCSpout.
 
 ### Stdout Topology
 
@@ -103,22 +88,23 @@ Several Flux topologies are provided to test and evaluate crawling of WARC archi
 
 This topology can be used to test parsers and extractors without the need to setup any indexer backend. The Java topology class ([CrawlTopology](src/main/java/org/commoncrawl/stormcrawler/CrawlTopology.java)) runs an equivalent topology.
 
-
 ### Rewrite WARC files
 
 [warc-crawler-warc-rewrite](topology/warc-crawler-warc-rewrite/) reads WARC files and sends the content to a WARC writer bolt which stores it again in WARC files. Could be extended by additional bolts to filter and/or enrich the WARC records.
 
-### Index into Elasticsearch
+### Index into OpenSearch
 
-[warc-crawler-index-elasticsearch](topology/warc-crawler-index-elasticsearch/) reads WARC files, parses HTML pages, extracts text and metadata and sends documents into Elasticsearch for indexing.
+[warc-crawler-index-opensearch](topology/warc-crawler-index-opensearch/) reads WARC files, parses HTML pages, extracts text and metadata and sends documents into OpenSearch for indexing.
 
-This topology requires that Elasticsearch is running:
-- install Elasticsearch (and Kibana) 7.5.0 - also higher versions of 7.x might work
-- start Elasticsearch
-- initialize Eleasticsearch indices by running [ES_IndexInit.sh](topology/warc-crawler-index-elasticsearch/ES_IndexInit.sh)
-- adapt the [es-conf.yaml](topology/warc-crawler-index-elasticsearch/es-conf.yaml) file, so that Elasticsearch is reachable from the Storm workers – the host name `elasticsearch` is used in the [Docker setup](#run-topology-on-docker), change the host name to `localhost` when running in local mode with a local Elasticsearch installation.
+This topology requires that OpenSearch is running:
+- Install OpenSearch (and Kibana) 2.9.5 - also higher versions might work
+- Start OpenSearch
+- Initialize OpenSearch indices by running [OS_IndexInit.sh](topology/warc-crawler-index-opensearch/OS_IndexInit.sh)
+- Initialize the dashboards by running [importDashboards.sh](topology/warc-crawler-index-opensearch/dashboards/importDashboards.sh)
+- Adapt the [opensearch-conf.yaml](topology/warc-crawler-index-opensearch/opensearch-conf.yaml) file, so that OpenSearch is reachable from the Storm workers – the host name `opensearch-sc` is used in the [Docker setup](#run-topology-on-docker), change the host name to `localhost` when running in local mode with a local OpenSearch installation.
+- When the topology is running, visit the status dashboard: <http://localhost:5601/app/dashboards#/view/Crawl-status>
 
-See also the documentation of [StormCrawler's Elasticsearch module](https://github.com/DigitalPebble/storm-crawler/tree/master/external/elasticsearch).
+See also the documentation of [StormCrawler's OpenSearch module](https://github.com/apache/stormcrawler/tree/master/external/opensearch).
 
 ### Index into Solr
 
@@ -127,7 +113,7 @@ See also the documentation of [StormCrawler's Elasticsearch module](https://gith
 As a requirement Solr must be installed and running:
 - install [Solr](https://lucene.apache.org/solr/) 8.10.1
 - start Solr
-- initialize the cores using [StormCrawler's Solr core config](https://github.com/DigitalPebble/storm-crawler/tree/master/external/solr/cores)
+- initialize the cores using [StormCrawler's Solr core config](https://github.com/apache/stormcrawler/tree/master/external/solr/cores)
   ```
   bin/solr create -c status  -d storm-crawler/external/solr/cores/status/
   bin/solr create -c metrics -d storm-crawler/external/solr/cores/metrics/
@@ -135,12 +121,21 @@ As a requirement Solr must be installed and running:
   ```
 - adapt [solr-conf.yaml](topology/warc-crawler-index-solr/solr-conf.yaml) file, so that Solr is reachable from the Storm workers – the host name `solr` is used in the [Docker setup](#run-topology-on-docker), change the host name to `localhost` when running in local mode with a local Solr installation.
 
-See also the documentation of [StormCrawler's Solr module](https://github.com/DigitalPebble/storm-crawler/tree/master/external/solr).
+See also the documentation of [StormCrawler's Solr module](https://github.com/apache/stormcrawler/tree/master/external/solr).
 
 
-## Run Topology on Docker
+## Run Topology on Docker and Docker Compose
 
-A configuration to run the topologies via [docker-compose](https://docs.docker.com/compose/) is provided. The file [docker-compose.yaml](./docker-compose.yaml) puts every component (Storm Nimbus, Supervisor and UI, but also Elasticsearch and Solr) into its own container. The topology is launched from a separate container which is linked to container of Storm Nimbus.
+You can run the topologies which require no indexing backend using the provided Dockerfile:
+```
+docker build . -t warc-crawler:latest
+
+docker run --rm -ti -v /path/to/warc/data:/data/input warc-crawler:latest /bin/bash
+
+$> storm local warc-crawler.jar org.apache.storm.flux.Flux topology/warc-crawler-stdout/warc-crawler-stdout.flux
+```
+
+In addition, a configuration to run the topologies via [docker-compose](https://docs.docker.com/compose/) is provided. The file [docker-compose.yaml](./docker-compose.yaml) puts every component (Storm Nimbus, Supervisor and UI, but also OpenSearch and Solr) into its own container. The topology is launched from a separate container which is linked to the container of Storm Nimbus.
 
 WARC input is per default read from the folder `warcdata` in the current directory. Another location can be defined by setting the environment variable `WARCINPUT`:
 ```sh
@@ -151,12 +146,12 @@ export WARCINPUT
 First we launch all components:
 
 ```
-docker-compose -f docker-compose.yaml up --build --renew-anon-volumes --remove-orphans
+docker compose -f docker-compose.yaml up --build --renew-anon-volumes --remove-orphans
 ```
 
 Now we can launch the container `storm-crawler`
 ```
-docker-compose run --rm storm-crawler
+docker compose run --rm storm-crawler
 ```
 
 and in the running container our topology:
@@ -176,7 +171,7 @@ Also the [Storm UI on localhost](http://localhost:8080/) is available and will p
 
 To inspect the worker log files we need to attach to the container running Storm Supervisor
 ```
-docker exec -it storm-supervisor /bin/bash
+docker exec -it supervisor /bin/bash
 ```
 then find the log file and read it:
 ```
@@ -192,30 +187,32 @@ If done we kill the topology
 $warc-crawler/> storm kill warc-crawler-dev-null -w 10
 1636 [main] INFO  o.a.s.c.kill-topology - Killed topology: warc-crawler-dev-null
 ```
-leave the container (`exit`) and shut down all running containers:
-```
-docker-compose down
-```
 
+... and leave the container (`exit`) and shut down all running containers:
+```
+docker compose down
+```
 
 Of course, the topology could be also launched in a single command:
 ```
-docker-compose run --rm storm-crawler storm jar warc-crawler.jar org.apache.storm.flux.Flux topology/warc-crawler-dev-null/warc-crawler-dev-null.flux
+docker compose run --rm storm-crawler storm jar warc-crawler.jar org.apache.storm.flux.Flux topology/warc-crawler-dev-null/warc-crawler-dev-null.flux
 ```
 
-#### Run Elasticsearch Topologies on Docker
+For additional information, please see the [StormCrawler Docker Compose documentation](https://stormcrawler.apache.org/docs/3.5.1/index.html#_docker_compose_setup).
 
-First, the Elasticsearch indices need to be initialized by running [ES_IndexInit.sh](topology/warc-crawler-index-elasticsearch/ES_IndexInit.sh).
+#### Run OpenSearch Topologies on Docker
 
-Then the Elasticsearch topology can be launched via
+First, the OpenSearch indices and dashboards need to be initialized by running [OS_IndexInit.sh](topology/warc-crawler-index-opensearch/OS_IndexInit.sh) and  [importDashboards.sh](topology/warc-crawler-index-opensearch/dashboards/importDashboards.sh).
+
+Then the OpenSearch topology can be launched via
 ```
-docker-compose run --rm storm-crawler storm jar warc-crawler.jar org.apache.storm.flux.Flux \
-   topology/warc-crawler-index-elasticsearch/warc-crawler-index-elasticsearch.flux
+docker compose run --rm storm-crawler storm jar warc-crawler.jar org.apache.storm.flux.Flux \
+   topology/warc-crawler-index-opensearch/warc-crawler-index-opensearch.flux
 ```
 
 #### Run Solr Topologies on Docker
 
-To create the Solr cores, the "solr" container needs access to [StormCrawler's Solr core config](https://github.com/DigitalPebble/storm-crawler/tree/master/external/solr/cores):
+To create the Solr cores, the "solr" container needs access to [StormCrawler's Solr core config](https://github.com/apache/stormcrawler/tree/master/external/solr/cores):
 - because Solr will write into the core folders, it's recommended to create a copy first and assign the necessary file permissions:
   ```sh
   cp .../storm-crawler/external/solr/cores /tmp/storm-crawler-solr-conf
@@ -234,6 +231,6 @@ To create the Solr cores, the "solr" container needs access to [StormCrawler's S
   ```
 - finally launch the Solr topology
   ```
-  docker-compose run --rm storm-crawler storm jar warc-crawler.jar org.apache.storm.flux.Flux \
+  docker compose run --rm storm-crawler storm jar warc-crawler.jar org.apache.storm.flux.Flux \
      topology/warc-crawler-index-solr/warc-crawler-index-solr.flux
   ```

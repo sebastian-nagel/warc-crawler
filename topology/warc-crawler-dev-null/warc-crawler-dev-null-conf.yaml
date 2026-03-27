@@ -15,7 +15,7 @@ config:
 
   # mandatory when using Flux
   topology.kryo.register:
-    - com.digitalpebble.stormcrawler.Metadata
+    - org.apache.stormcrawler.Metadata
 
   # DevNullBolt sleep time
   nullbolt.sleep.micros: 0

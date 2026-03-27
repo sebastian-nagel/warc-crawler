@@ -19,14 +19,14 @@ package org.commoncrawl.stormcrawler;
 import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Fields;
 
-import com.digitalpebble.stormcrawler.ConfigurableTopology;
-import com.digitalpebble.stormcrawler.Constants;
-import com.digitalpebble.stormcrawler.bolt.JSoupParserBolt;
-import com.digitalpebble.stormcrawler.indexing.StdOutIndexer;
-import com.digitalpebble.stormcrawler.persistence.StdOutStatusUpdater;
-import com.digitalpebble.stormcrawler.tika.ParserBolt;
-import com.digitalpebble.stormcrawler.tika.RedirectionBolt;
-import com.digitalpebble.stormcrawler.warc.WARCSpout;
+import org.apache.stormcrawler.ConfigurableTopology;
+import org.apache.stormcrawler.Constants;
+import org.apache.stormcrawler.bolt.JSoupParserBolt;
+import org.apache.stormcrawler.indexing.StdOutIndexer;
+import org.apache.stormcrawler.persistence.StdOutStatusUpdater;
+import org.apache.stormcrawler.tika.ParserBolt;
+import org.apache.stormcrawler.tika.RedirectionBolt;
+import org.apache.stormcrawler.warc.WARCSpout;
 
 /**
  * Read WARC files and emit page captures as tuples into the topology

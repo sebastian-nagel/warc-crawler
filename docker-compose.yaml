@@ -1,21 +1,32 @@
-version: "3.6"
-
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 services:
 
   # Apache Storm components
   # - Zookeeper coordinates the communication between Nimbus and the Supervisors
   zookeeper:
-    image: zookeeper:${ZOOKEEPER_VERSION:-3.6.3}
+    image: zookeeper:${ZOOKEEPER_VERSION:-3.9.3}
     container_name: zookeeper
     restart: always
+
   # - the daemon Nimbus runs on the master node
   storm-nimbus:
-    image: storm:${STORM_VERSION:-2.3.0}
-    container_name: storm-nimbus
-    ## must override worker.childopts and remove options not available
-    ## for Java 11: `-XX:+PrintGCDateStamps`, etc
-    #command: storm nimbus
-    command: storm nimbus -c worker.childopts="-Xmx%HEAP-MEM%m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=artifacts/heapdump"
+    image: storm:${STORM_VERSION:-2.8.4}
+    container_name: nimbus
+    hostname: nimbus
+    command: storm nimbus
     depends_on:
       - zookeeper
     links:
@@ -23,14 +34,12 @@ services:
     ports:
       - 6627:6627
     restart: always
+
   # - the Supervisors run on the worker nodes
   storm-supervisor:
-    image: storm:${STORM_VERSION:-2.3.0}
-    container_name: storm-supervisor
-    ## must override worker.childopts and remove options not available
-    ## for Java 11: `-XX:+PrintGCDateStamps`, etc
-    #command: storm supervisor
-    command: storm supervisor -c worker.childopts="-Xmx%HEAP-MEM%m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=artifacts/heapdump"
+    image: storm:${STORM_VERSION:-2.8.4}
+    container_name: supervisor
+    command: storm supervisor -c worker.childopts=-Xmx%HEAP-MEM%m
     depends_on:
       - zookeeper
       - storm-nimbus
@@ -40,59 +49,66 @@ services:
     # supervisor launches the worker processes
     # which need to be able to access
     # - (in case a indexing topology is run) the
-    #   Elasticsearch (http://elasticsearch:9200/) and
-      - elasticsearch
+    #   OpenSearch (http://opensearch:9200/) and
+      - opensearch-sc
     #   Solr (http://solr:8983/) containers
       - solr
-    # - and the WARC input
+    # - and the WARC input and output for the WARC-rewrite topology
     volumes:
       - ${WARCINPUT:-./warcdata}:/data/input
+      - ${WARCOUTPUT:-./warcoutput}:/data/warc
     restart: always
+
   # - the Storm UI provides diagnostics about the Storm cluster
   storm-ui:
-    image: storm:${STORM_VERSION:-2.3.0}
-    container_name: storm-ui
+    image: storm:${STORM_VERSION:-2.8.4}
+    container_name: ui
     command: storm ui
     depends_on:
       - storm-nimbus
     links:
       - storm-nimbus:nimbus
     ports:
-      - 8080:8080
+      - "127.0.0.1:8080:8080"
     restart: always
 
-  # Elasticsearch and Kibana
-  # cf. https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
-  elasticsearch:
-    image: elasticsearch:${ELASTICSEARCH_VERSION:-7.15.1}
-    container_name: elasticsearch
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    restart: always
+  opensearch-sc:
+    image: opensearchproject/opensearch:${OPENSEARCH_VERSION:-2.19.4}
+    container_name: opensearch-sc
     environment:
-      - node.name=elasticsearch
-      - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=elasticsearch
-      - cluster.initial_master_nodes=elasticsearch
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms8g -Xmx8g"
+      - cluster.name=opensearch-sc-cluster
+      - node.name=opensearch-sc
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
+      - "OPENSEARCH_JAVA_OPTS=-Xms4G -Xmx4G"
+      - plugins.security.disabled=true
+      - "DISABLE_INSTALL_DEMO_CONFIG=true"
+    volumes:
+      - ${OPENSEARCHDATA:-./opensearchdata}:/usr/share/opensearch/data
     ulimits:
       memlock:
         soft: -1
         hard: -1
-  kibana:
-    image: kibana:${ELASTICSEARCH_VERSION:-7.15.1}
-    container_name: kibana
+      nofile:
+        soft: 65536 # maximum number of open files for the OpenSearch user, set to at least 65536 on modern systems
+        hard: 65536
     ports:
-      - "5601:5601"
-    # volumes:
-    #   - elasticsearch:/usr/share/elasticsearch/data
-    restart: always
+      - "127.0.0.1:9200:9200" # REST API
+
+  opensearch-dashboard:
+    image: opensearchproject/opensearch-dashboards:${OPENSEARCH_VERSION:-2.19.4}
+    container_name: dashboard
+    ports:
+      - "127.0.0.1:5601:5601"
+    expose:
+      - "5601"
+    environment:
+      - 'OPENSEARCH_HOSTS=["http://opensearch-sc:9200"]'
+      - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true" # disables security dashboards plugin in OpenSearch Dashboards
 
   # Apache Solr
   solr:
-    image: solr:${SOLR_VERSION:-8.10.1}
+    image: solr:${SOLR_VERSION:-9.10.1}
     container_name: solr
     ports:
       - "8983:8983"

@@ -15,7 +15,7 @@ config:
 
   # mandatory when using Flux
   topology.kryo.register:
-    - com.digitalpebble.stormcrawler.Metadata
+    - org.apache.stormcrawler.Metadata
 
   # The maximum number of bytes for returned HTTP response bodies.
   # Set -1 to disable the limit.

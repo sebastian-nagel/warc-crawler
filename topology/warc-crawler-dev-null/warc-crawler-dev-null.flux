@@ -14,7 +14,7 @@ includes:
 
 spouts:
   - id: "spout"
-    className: "com.digitalpebble.stormcrawler.warc.WARCSpout"
+    className: "org.apache.stormcrawler.warc.WARCSpout"
     parallelism: 1
     constructorArgs:
       - "/data/input/"

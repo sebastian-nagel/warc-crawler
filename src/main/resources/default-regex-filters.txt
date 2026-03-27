@@ -11,7 +11,7 @@
 
 # exclude localhost and equivalents to avoid that information
 # can be leaked by placing faked links pointing to web interfaces
-# of services running on the crawling machine (e.g., Elasticsearch,
+# of services running on the crawling machine (e.g., OpenSearch,
 # Storm)
 #
 # - exclude localhost and loop-back addresses

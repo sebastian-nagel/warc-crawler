@@ -15,8 +15,8 @@ config:
 
   # mandatory when using Flux
   topology.kryo.register:
-    - com.digitalpebble.stormcrawler.Metadata
-    - com.digitalpebble.stormcrawler.persistence.Status
+    - org.apache.stormcrawler.Metadata
+    - org.apache.stormcrawler.persistence.Status
 
   # content limit for HTTP payload
   http.content.limit: 1048576

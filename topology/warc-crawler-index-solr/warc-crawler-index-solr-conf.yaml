@@ -15,8 +15,8 @@ config:
 
   # mandatory when using Flux
   topology.kryo.register:
-    - com.digitalpebble.stormcrawler.Metadata
-    - com.digitalpebble.stormcrawler.persistence.Status
+    - org.apache.stormcrawler.Metadata
+    - org.apache.stormcrawler.persistence.Status
 
   # set to 0 to deactivate debugging
   topology.eventlogger.executors: 0
@@ -25,7 +25,7 @@ config:
   topology.metrics.consumer.register:
      - class: "org.apache.storm.metric.LoggingMetricsConsumer"
        parallelism.hint: 1
-     - class: "com.digitalpebble.stormcrawler.solr.metrics.MetricsConsumer"
+     - class: "org.apache.stormcrawler.solr.metrics.MetricsConsumer"
        parallelism.hint: 1
 
   # status index and fetcher queues are partitioned by domain
