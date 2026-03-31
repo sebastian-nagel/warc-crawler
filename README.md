@@ -106,24 +106,6 @@ This topology requires that OpenSearch is running:
 
 See also the documentation of [StormCrawler's OpenSearch module](https://github.com/apache/stormcrawler/tree/master/external/opensearch).
 
-### Index into Solr
-
-[warc-crawler-index-solr](topology/warc-crawler-index-solr/) reads WARC files, parses HTML pages, extracts text and metadata and sends documents into Solr for indexing.
-
-As a requirement Solr must be installed and running:
-- install [Solr](https://lucene.apache.org/solr/) 8.10.1
-- start Solr
-- initialize the cores using [StormCrawler's Solr core config](https://github.com/apache/stormcrawler/tree/master/external/solr/cores)
-  ```
-  bin/solr create -c status  -d storm-crawler/external/solr/cores/status/
-  bin/solr create -c metrics -d storm-crawler/external/solr/cores/metrics/
-  bin/solr create -c docs    -d storm-crawler/external/solr/cores/docs/
-  ```
-- adapt [solr-conf.yaml](topology/warc-crawler-index-solr/solr-conf.yaml) file, so that Solr is reachable from the Storm workers – the host name `solr` is used in the [Docker setup](#run-topology-on-docker), change the host name to `localhost` when running in local mode with a local Solr installation.
-
-See also the documentation of [StormCrawler's Solr module](https://github.com/apache/stormcrawler/tree/master/external/solr).
-
-
 ## Run Topology on Docker and Docker Compose
 
 You can run the topologies which require no indexing backend using the provided Dockerfile:
@@ -135,7 +117,7 @@ docker run --rm -ti -v /path/to/warc/data:/data/input warc-crawler:latest /bin/b
 $> storm local warc-crawler.jar org.apache.storm.flux.Flux topology/warc-crawler-stdout/warc-crawler-stdout.flux
 ```
 
-In addition, a configuration to run the topologies via [docker-compose](https://docs.docker.com/compose/) is provided. The file [docker-compose.yaml](./docker-compose.yaml) puts every component (Storm Nimbus, Supervisor and UI, but also OpenSearch and Solr) into its own container. The topology is launched from a separate container which is linked to the container of Storm Nimbus.
+In addition, a configuration to run the topologies via [docker-compose](https://docs.docker.com/compose/) is provided. The file [docker-compose.yaml](./docker-compose.yaml) puts every component (Storm Nimbus, Supervisor and UI, but also OpenSearch) into its own container. The topology is launched from a separate container which is linked to the container of Storm Nimbus.
 
 WARC input is per default read from the folder `warcdata` in the current directory. Another location can be defined by setting the environment variable `WARCINPUT`:
 ```sh
@@ -210,27 +192,3 @@ docker compose run --rm storm-crawler storm jar warc-crawler.jar org.apache.stor
    topology/warc-crawler-index-opensearch/warc-crawler-index-opensearch.flux
 ```
 
-#### Run Solr Topologies on Docker
-
-To create the Solr cores, the "solr" container needs access to [StormCrawler's Solr core config](https://github.com/apache/stormcrawler/tree/master/external/solr/cores):
-- because Solr will write into the core folders, it's recommended to create a copy first and assign the necessary file permissions:
-  ```sh
-  cp .../storm-crawler/external/solr/cores /tmp/storm-crawler-solr-conf
-  chmod a+rwx -R /tmp/storm-crawler-solr-conf/
-  ```
-- point the environment variable `STORM_CRAWLER_SOLR_CONF` to this folder:
-  ```sh
-  STORM_CRAWLER_SOLR_CONF=/tmp/storm-crawler-solr-conf
-  export STORM_CRAWLER_SOLR_CONF
-  ```
-- after all docker-compose services are running, create the Solr cores by
-  ```
-  docker exec -it solr /opt/solr/bin/solr create -c status  -d /storm-crawler-solr-conf/status/
-  docker exec -it solr /opt/solr/bin/solr create -c metrics -d /storm-crawler-solr-conf/metrics/
-  docker exec -it solr /opt/solr/bin/solr create -c docs    -d /storm-crawler-solr-conf/docs/
-  ```
-- finally launch the Solr topology
-  ```
-  docker compose run --rm storm-crawler storm jar warc-crawler.jar org.apache.storm.flux.Flux \
-     topology/warc-crawler-index-solr/warc-crawler-index-solr.flux
-  ```

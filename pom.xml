@@ -191,11 +191,6 @@ under the License.
 			<version>${stormcrawler.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.stormcrawler</groupId>
-			<artifactId>stormcrawler-solr</artifactId>
-			<version>${stormcrawler.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.storm</groupId>
 			<artifactId>storm-client</artifactId>
 			<version>${storm.version}</version>

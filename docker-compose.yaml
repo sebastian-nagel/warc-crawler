@@ -51,8 +51,6 @@ services:
     # - (in case a indexing topology is run) the
     #   OpenSearch (http://opensearch:9200/) and
       - opensearch-sc
-    #   Solr (http://solr:8983/) containers
-      - solr
     # - and the WARC input and output for the WARC-rewrite topology
     volumes:
       - ${WARCINPUT:-./warcdata}:/data/input
@@ -105,16 +103,6 @@ services:
     environment:
       - 'OPENSEARCH_HOSTS=["http://opensearch-sc:9200"]'
       - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true" # disables security dashboards plugin in OpenSearch Dashboards
-
-  # Apache Solr
-  solr:
-    image: solr:${SOLR_VERSION:-9.10.1}
-    container_name: solr
-    ports:
-      - "8983:8983"
-    volumes:
-      - ${STORM_CRAWLER_SOLR_CONF:-./storm-crawler/external/solr/cores}:/storm-crawler-solr-conf
-    restart: always
 
   # - to launch a topology
   # - will exit on startup
