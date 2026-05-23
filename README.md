@@ -31,7 +31,7 @@ TODO
 
 ### Run a Flux Topology
 
-To submit a [Flux](https://storm.apache.org/releases/2.8.4/flux.html) to do the same:
+To submit a [Flux](https://storm.apache.org/releases/2.8.8/flux.html) to do the same:
 
 ``` sh
 storm local target/warc-crawler-*.jar org.apache.storm.flux.Flux topology/warc-crawler-stdout/warc-crawler-stdout.flux
@@ -180,7 +180,7 @@ Of course, the topology could be also launched in a single command:
 docker compose run --rm storm-crawler storm jar warc-crawler.jar org.apache.storm.flux.Flux topology/warc-crawler-dev-null/warc-crawler-dev-null.flux
 ```
 
-For additional information, please see the [StormCrawler Docker Compose documentation](https://stormcrawler.apache.org/docs/3.5.1/index.html#_docker_compose_setup).
+For additional information, please see the [StormCrawler Docker Compose documentation](https://stormcrawler.apache.org/docs/3.6.0/index.html#_docker_compose_setup).
 
 #### Run OpenSearch Topologies on Docker
 

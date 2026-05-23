@@ -1,4 +1,4 @@
-FROM storm:2.8.4
+FROM storm:2.8.8
 
 RUN apt-get update -qq && \
 	apt-get install -yq --no-install-recommends \
@@ -10,7 +10,7 @@ RUN apt-get update -qq && \
 #
 # Storm crawler / WARC crawler
 #
-ENV CRAWLER_VERSION=3.5.1
+ENV CRAWLER_VERSION=3.6.0
 RUN mkdir /warc-crawler && \
     chmod -R a+rx /warc-crawler
 

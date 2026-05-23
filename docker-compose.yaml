@@ -23,7 +23,7 @@ services:
 
   # - the daemon Nimbus runs on the master node
   storm-nimbus:
-    image: storm:${STORM_VERSION:-2.8.4}
+    image: storm:${STORM_VERSION:-2.8.8}
     container_name: nimbus
     hostname: nimbus
     command: storm nimbus
@@ -37,7 +37,7 @@ services:
 
   # - the Supervisors run on the worker nodes
   storm-supervisor:
-    image: storm:${STORM_VERSION:-2.8.4}
+    image: storm:${STORM_VERSION:-2.8.8}
     container_name: supervisor
     command: storm supervisor -c worker.childopts=-Xmx%HEAP-MEM%m
     depends_on:
@@ -59,7 +59,7 @@ services:
 
   # - the Storm UI provides diagnostics about the Storm cluster
   storm-ui:
-    image: storm:${STORM_VERSION:-2.8.4}
+    image: storm:${STORM_VERSION:-2.8.8}
     container_name: ui
     command: storm ui
     depends_on:
@@ -71,7 +71,7 @@ services:
     restart: always
 
   opensearch-sc:
-    image: opensearchproject/opensearch:${OPENSEARCH_VERSION:-2.19.4}
+    image: opensearchproject/opensearch:${OPENSEARCH_VERSION:-2.19.5}
     container_name: opensearch-sc
     environment:
       - cluster.name=opensearch-sc-cluster
@@ -94,7 +94,7 @@ services:
       - "127.0.0.1:9200:9200" # REST API
 
   opensearch-dashboard:
-    image: opensearchproject/opensearch-dashboards:${OPENSEARCH_VERSION:-2.19.4}
+    image: opensearchproject/opensearch-dashboards:${OPENSEARCH_VERSION:-2.19.5}
     container_name: dashboard
     ports:
       - "127.0.0.1:5601:5601"
